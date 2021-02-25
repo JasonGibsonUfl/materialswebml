@@ -4,6 +4,12 @@ from .models import *
 from .serializers import *
 from .filters import *
 from django_filters.rest_framework import DjangoFilterBackend
+
+class ElementViewSet(viewsets.ModelViewSet):
+    queryset = Element.objects.all()
+    serializers = ElementSerializer
+    http_method_names = ["get"]
+
 class SVRModelViewSet(viewsets.ModelViewSet):
     queryset = SVRModel.objects.all().order_by("id")
     serializer_class = SVRModelSerializer

@@ -1,24 +1,39 @@
 from django.db import models
 import pickle
+import base64
+import codecs
+class Element(models.Model):
+    name = models.TextField()
+    symbol = models.CharField(max_length=2)
 
-# from django_mysql.models import Model
-# Create your models here.
-
+    def __str__(self):
+        return self.symbol
 
 class MaterialSystem(models.Model):
     num_elements = models.IntegerField()
     num_entries = models.IntegerField()
-    elements = models.CharField(max_length=30)
-
+    elements = models.ManyToManyField(Element)
+    def __str__(self):
+        string = ''
+        return '-'.join([str(element) for element in self.elements.all()])
 
 class MLModel(models.Model):
+
+    TARGET_PROBERTY_CHOICES = [
+        ('Formation Energy', 'Formation Energy'),
+        ('Force', 'Force'),
+    ]
     train_MAE = models.FloatField()
     train_MSE = models.FloatField()
     test_MAE = models.FloatField()
     test_MSE = models.FloatField()
     baseline_MSE = models.FloatField()
     baseline_MAE = models.FloatField()
+    target_property = models.CharField(max_length=25,choices=TARGET_PROBERTY_CHOICES)
     material_system = models.ForeignKey(MaterialSystem, related_name='mlmodel', on_delete=models.CASCADE)
+    def __str__(self):
+        string = ''
+        return '-'.join([str(element) for element in self.material_system.elements.all()]) + '\t' + str(self.target_property)
 
 
 class SVRModel(models.Model):
@@ -41,14 +56,21 @@ class SVRModel(models.Model):
     var = models.TextField(null=True)
     n_samples_seen = models.IntegerField(null=True)
     material_system = models.ForeignKey(MaterialSystem, on_delete=models.CASCADE)
+    pickle_str = models.TextField()
 
+    def __str__(self):
+        string = ''
+        return '-'.join([str(element) for element in self.material_system.elements.all()]) + '\t' + str(self.transformed)
 
 class SVRModelManager(models.Manager):
     def create_model(
-        self, model_path, elements, results, params, transformer_path=None
+        self, model_path, elements, results, params, target, transformer_path=None
     ):
         with open(model_path, "rb") as mod:
             model = pickle.load(mod)
+        pickle_str = codecs.encode(pickle.dumps(model), "base64").decode()
+
+        #pickle_s = base64.b64encode(pickle_obj)
         intercept = str(model._intercept_)
         dual_coef = str(model._dual_coef_)
         sparse = str(model._sparse)
@@ -60,7 +82,9 @@ class SVRModelManager(models.Manager):
         probB = str(model.probB_)
         gamma = str(model._gamma)
         parameters = str(model.get_params())
-        material_system = MaterialSystem.objects.get(elements=elements)
+        material_system = MaterialSystem.objects.filter(elements__symbol=elements[0]).filter(elements__symbol=elements[1]).get()
+        target = target
+        #material_system = MaterialSystem.objects.get(elements__symbols=elements)
         # Create MLModel
         mlmodel = MLModel.objects.create(
             train_MAE=results["train_MAE"],
@@ -69,6 +93,7 @@ class SVRModelManager(models.Manager):
             test_MSE=results["test_MSE"],
             baseline_MSE=results["baseline_MSE"],
             baseline_MAE=results["baseline_MAE"],
+            target_property = target,
             material_system=material_system,
         )
         mlmodel.save()
@@ -102,6 +127,7 @@ class SVRModelManager(models.Manager):
                 mean=mean,
                 var=var,
                 n_samples_seen=n_samples_seen,
+                pickle_str = pickle_str
             )
         else:
             model = SVRModel.objects.create(
@@ -119,6 +145,7 @@ class SVRModelManager(models.Manager):
                 material_system=material_system,
                 mlmodel=mlmodel,
                 descriptor_parameters=params,
+                pickle_str = pickle_str
             )
 
         return model

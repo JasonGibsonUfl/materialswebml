@@ -1,0 +1,14 @@
+from mlmodel.models import SVRModelManager
+svrm = SVRModelManager()
+model_path='./Cd-Te.sav'
+elements = ['Cd', 'Te']
+results = {'train_MAE': 0.03905611929065983,
+ 'train_MSE': 0.002344095257510871,
+ 'test_MAE': 0.041379732570307186,
+ 'test_MSE': 0.00290962500351546,
+ 'baseline_MAE': 0.08600906971741192,
+ 'baseline_MSE': 0.012190286830473348}
+
+params = {'species' : elements, 'rcut' : 8, 'nmax' : 6, 'lmax' : 8, 'rbf': 'gto', 'sigma' : 0.125, 'average' : 'inner'}
+
+svrm.create_model(model_path, elements, results, params, 'Formation Energy')

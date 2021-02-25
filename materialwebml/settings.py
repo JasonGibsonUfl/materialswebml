@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'mlmodel.apps.MlmodelConfig',
     'rest_framework',
-    'django_filters'
+    'django_filters',
+    'django_extensions',
 ]
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,

@@ -5,3 +5,4 @@ from .models import *
 admin.site.register(SVRModel)
 admin.site.register(MLModel)
 admin.site.register(MaterialSystem)
+admin.site.register(Element)
