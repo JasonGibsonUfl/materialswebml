@@ -82,6 +82,14 @@ class JSONField(models.TextField):
 
 
 class Element(models.Model):
+    """
+    Elements model
+    Attributes:
+        name: str
+            name of the element
+        symbol : str
+            symbol of the element
+    """
     name = models.TextField()
     symbol = models.CharField(max_length=2)
 
@@ -89,16 +97,44 @@ class Element(models.Model):
         return self.symbol
 
 class MaterialSystem(models.Model):
+    """
+    Material-System that a MLModel is valid for
+    Relationships:
+        :model: 'mlmodel.Element' via elements
+    Attributes:
+        num_elements : int
+            Number of elements in the material system
+    """
     num_elements = models.IntegerField()
-    num_entries = models.IntegerField()
-    #change to Foriegnkey
+    #num_entries = models.IntegerField()
     elements = models.ManyToManyField(Element)
     def __str__(self):
         string = ''
         return '-'.join([str(element) for element in self.elements.all()])
 
 class MLModel(models.Model):
-
+    """
+    MLModel model. Currently the central model all ml model types will be related to this model.
+    Relationships:
+        :model: 'mlmodel.MaterialSystem' via material_system
+    Attributes:
+        train_MAE : float
+            mean absoulute error of trainning data
+        train_MSE : float
+            mean squared error of trainning data
+        test_MAE : float
+            mean absoulute error of testing data
+        test_MSE : float
+            mean squared error of testing data 
+        baseline_MAE : float
+            mean absoulute error if all targets are computed as the mean value
+        baseline_MSE : float
+            mean squared error if all targets are computed as the mean value
+        targer_property : str
+            name of property model will predict
+        name : str
+            name given to populated database
+    """
     TARGET_PROBERTY_CHOICES = [
         ('Formation Energy', 'Formation Energy'),
         ('Force', 'Force'),
@@ -111,6 +147,7 @@ class MLModel(models.Model):
     baseline_MAE = models.FloatField()
     target_property = models.CharField(max_length=25,choices=TARGET_PROBERTY_CHOICES)
     material_system = models.ForeignKey(MaterialSystem, related_name='mlmodel', on_delete=models.CASCADE)
+    name = models.TextField()
     def __str__(self):
         string = ''
         return '-'.join([str(element) for element in self.material_system.elements.all()]) + '\t' + str(self.target_property)
@@ -118,6 +155,43 @@ class MLModel(models.Model):
 
 
 class SVRModel(models.Model):
+    """
+    Model containing information to rebuild an support vector regression model
+    Relationships:
+        :model: 'mlmodel.MaterialSystem' via material_system
+        :model: 'mlmodel.MLModel' via mlmodel
+    Attributes:
+        parameters : dict
+            dictionary containing all of the svr hiperparameters
+        intercept: np.array
+            sklearn parameter for model
+        dual_coef : np.array
+            sklearn parameter
+        sparse : boolean
+            sklearn parameter
+        shape_fit : str
+            sklearn parameter
+        support : np.array
+            sklearn parameter
+        support_vectors : np.array
+            sklearn parameter
+        probA : np.array
+            sklearn parameter
+        probB : np.array
+            sklearn parameter
+        gamma : float
+            sklearn parameter
+        descriptor_parameters : dict
+            dictionary containing all information to compute the descriptor
+        transformed : boolean
+            True if the data is altered after the descriptor is computed
+        pickle_str : str
+            pickle string of svr model for python reconcstruction
+        pickle_str_transformer : str
+            pickle string of transformer for python reconstruction
+                                        
+        
+    """
     parameters = DictField()
     intercept = NumpyArrayField()
     dual_coef = NumpyArrayField()
@@ -132,21 +206,41 @@ class SVRModel(models.Model):
     mlmodel = models.OneToOneField(MLModel, related_name='svr', on_delete=models.CASCADE)
     descriptor_parameters = DictField()
     transformed = models.BooleanField(default=False)
-    scale = models.TextField(null=True)
-    mean = models.TextField(null=True)
-    var = models.TextField(null=True)
-    n_samples_seen = models.IntegerField(null=True)
     material_system = models.ForeignKey(MaterialSystem, on_delete=models.CASCADE)
     pickle_str = models.TextField()
+    pickle_str_transformer = models.TextField(null = True)
 
     def __str__(self):
         string = ''
         return '-'.join([str(element) for element in self.material_system.elements.all()]) + '\t' + str(self.transformed)
 
 class SVRModelManager(models.Manager):
+    """
+    used to create svr model and all relationships
+    """
     def create_model(
-        self, model_path, elements, results, params, target, transformer_path=None
+        self, model_path, elements, results, params, target, name, transformer_path=None
     ):
+        """
+        Parameters
+        ----------
+            model_path : str
+                path to *.sav file for svr model
+            elements : list
+                list of elements by symbol
+            results: dict
+                dictionary containning all errors for mlmodel
+            params : dict
+                dictionary of all information needed to reconstruct the descriptor
+            targer : str
+                name of property model will predict
+            name : str
+                name given to populated database
+        Returns:
+            model :
+                database entry
+
+        """
         with open(model_path, "rb") as mod:
             model = pickle.load(mod)
         pickle_str = codecs.encode(pickle.dumps(model), "base64").decode()
@@ -176,6 +270,7 @@ class SVRModelManager(models.Manager):
             baseline_MAE=results["baseline_MAE"],
             target_property = target,
             material_system=material_system,
+            name = name,
         )
         mlmodel.save()
 
@@ -183,11 +278,11 @@ class SVRModelManager(models.Manager):
             with open(transformer_path, "rb") as mod:
                 transformer = pickle.load(mod)
 
-            scale = transformer.scale_
-            mean = transformer.mean_
-            var = transformer.var_
-            n_samples_seen = transformer.n_samples_seen_
-
+            #scale = transformer.scale_
+            #mean = transformer.mean_
+            #var = transformer.var_
+            #n_samples_seen = transformer.n_samples_seen_
+            pickle_str_transformer = codecs.encode(pickle.dumps(transformer), "base64").decode()
             model = SVRModel.objects.create(
                 intercept=intercept,
                 dual_coef=dual_coef,
@@ -204,11 +299,13 @@ class SVRModelManager(models.Manager):
                 mlmodel=mlmodel,
                 descriptor_parameters=params,
                 transformed=True,
-                scale=scale,
-                mean=mean,
-                var=var,
-                n_samples_seen=n_samples_seen,
-                pickle_str = pickle_str
+                #scale=scale,
+                #mean=mean,
+                #var=var,
+                #n_samples_seen=n_samples_seen,
+                pickle_str = pickle_str,
+                pickle_str_transformer= pickle_str_transformer
+
             )
         else:
             model = SVRModel.objects.create(
@@ -226,7 +323,8 @@ class SVRModelManager(models.Manager):
                 material_system=material_system,
                 mlmodel=mlmodel,
                 descriptor_parameters=params,
-                pickle_str = pickle_str
+                pickle_str = pickle_str,
+                pickle_str_transformer = None
             )
 
         return model
@@ -235,17 +333,4 @@ class TrainingData(models.Model):
     structure = DictField()
     energy = models.FloatField()
     model = models.ForeignKey(MLModel, related_name='data', on_delete=models.CASCADE)
-#class dual_coef_test(models.Model):
-#    svrmodel = models.OneToOneField(SVRModel, on_delete=models.CASCADE)
 
-# class dual_coef_row(models.Model):
-#     row = models.ForeignKey(SVRModel, on_delete=models.CASCADE, related_name='dual_coef_row')
-#     def __str__(self):
-#         return str(self.id)
-#
-# class dual_coef_weight(models.Model):
-#     weight = models.FloatField()
-#     weight_row = models.ForeignKey(dual_coef_row, on_delete=models.CASCADE, related_name='dual_coef_weight')
-#     def __str__(self):
-#         return str(self.weight)
-    
