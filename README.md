@@ -4,13 +4,13 @@ to use clone the repo
 
 run:
 
-python manage.py createsuperuser
+    python manage.py createsuperuser
 
-follow the prombts
+follow the prompts
 
 run:
 
-python manage.py runserver
+    python manage.py runserver
 
 you will be able to access both 
 
