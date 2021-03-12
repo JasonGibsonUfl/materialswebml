@@ -1,12 +1,15 @@
 # materialswebml
 
 to use clone the repo
-run
+
+run:
+
 python manage.py createsuperuser
 
 follow the prombts
 
-run 
+run:
+
 python manage.py runserver
 
 you will be able to access both 
