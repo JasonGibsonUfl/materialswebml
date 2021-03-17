@@ -26,3 +26,33 @@ with open('./df.sav', "rb") as mod:
     energies = pickle.load(mod)
 for struc, ener in zip(structures, energies['Total Energy']):
     TrainingData.objects.create(structure = structures[struc].as_dict(), energy = ener, model = mlmodel)
+
+
+from mlmodel.models import *
+
+svrm = SVRModelManager()
+model_path='./Cd-Te.sav'
+scaler_path='./scaler.sav'
+elements = ['Al', 'Ni']
+results = {'train_MAE': 0.03205611929065983,
+ 'train_MSE': 0.005544095257510871,
+ 'test_MAE': 0.048379732570307186,
+ 'test_MSE': 0.00390962500351546,
+ 'baseline_MAE': 0.06600906971741192,
+ 'baseline_MSE': 0.012190286830473348}
+
+params = {'name' : 'soap','periodic' : True, 'species' : elements, 'rcut' : 6, 'nmax' : 6, 'lmax' : 8, 'rbf': 'gto', 'sigma' : 0.125, 'average' : 'inner'}
+name = 'AlNiSVRSOAPstandardized'
+svrm.create_model(model_path, elements, results, params, 'Formation Energy',name, scaler_path)
+
+
+
+from mlmodel.models import *
+mlmodel = MLModel.objects.get(name = name)
+import pickle
+with open('./structures.sav', "rb") as mod:
+    structures = pickle.load(mod)
+with open('./df.sav', "rb") as mod:
+    energies = pickle.load(mod)
+for struc, ener in zip(structures, energies['Total Energy']):
+    TrainingData.objects.create(structure = structures[struc].as_dict(), energy = ener, model = mlmodel)
