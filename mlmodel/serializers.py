@@ -14,7 +14,7 @@ class SVRModelSerializer(serializers.HyperlinkedModelSerializer):
 class MLModelSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = MLModel
-        fields = ["target_property","train_MSE", "test_MSE", "baseline_MSE", "train_MAE", "test_MAE", "baseline_MAE", "material_system","svr", 'data']
+        fields = ["DOI", "target_property","train_MSE", "test_MSE", "baseline_MSE", "train_MAE", "test_MAE", "baseline_MAE", "material_system","svr", 'data']
 
 class MaterialsSystemSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:

@@ -39,7 +39,8 @@ results = {'train_MAE': 0.03205611929065983,
  'test_MAE': 0.048379732570307186,
  'test_MSE': 0.00390962500351546,
  'baseline_MAE': 0.06600906971741192,
- 'baseline_MSE': 0.012190286830473348}
+ 'baseline_MSE': 0.012190286830473348,
+ 'DOI': '2' }
 
 params = {'name' : 'soap','periodic' : True, 'species' : elements, 'rcut' : 6, 'nmax' : 6, 'lmax' : 8, 'rbf': 'gto', 'sigma' : 0.125, 'average' : 'inner'}
 name = 'AlNiSVRSOAPstandardized'

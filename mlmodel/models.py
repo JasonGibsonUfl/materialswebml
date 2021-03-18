@@ -73,8 +73,8 @@ class MLModel(models.Model):
     baseline_MAE = models.FloatField()
     target_property = models.CharField(max_length=25,choices=TARGET_PROBERTY_CHOICES)
     material_system = models.ForeignKey(MaterialSystem, related_name='mlmodel', on_delete=models.CASCADE)
-    name = models.TextField()
-    DOI = models.TextField()
+    name = models.CharField(max_length=60, unique=True)
+    DOI = models.CharField(max_length=60)
     def __str__(self):
         string = ''
         return '-'.join([str(element) for element in self.material_system.elements.all()]) + '\t' + str(self.target_property)
@@ -196,6 +196,7 @@ class SVRModelManager(models.Manager):
             target_property = target,
             material_system=material_system,
             name = name,
+            DOI = results['DOI'],
         )
         mlmodel.save()
 

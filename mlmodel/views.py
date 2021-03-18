@@ -4,6 +4,7 @@ from .models import *
 from .serializers import *
 from .filters import *
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import generics
 
 class ElementViewSet(viewsets.ModelViewSet):
     queryset = Element.objects.all()
@@ -20,6 +21,9 @@ class MLModelViewSet(viewsets.ModelViewSet):
     serializer_class = MLModelSerializer
     http_method_names = ["get"]
     filter_class = MLModelFilter
+
+#class MLModelList(generics.ListCreateAPIView):
+    #queryset = MLModel.objects.all()
 
 class MaterialsSystemViewSet(viewsets.ModelViewSet):
     queryset = MaterialSystem.objects.all().order_by("id")

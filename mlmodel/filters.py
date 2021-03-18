@@ -9,6 +9,7 @@ class MLModelFilter(django_filters.FilterSet):
 
     #test_MAE = filters.RangeFilter()
     target_property = django_filters.CharFilter(field_name='target_property')
+    DOI = django_filters.CharFilter(field_name='DOI')
     class Meta:
         model = MLModel
-        fields = ["target_property", "element1", "element2"]
+        fields = ["DOI","target_property", "element1", "element2"]
