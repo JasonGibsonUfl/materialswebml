@@ -9,72 +9,147 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Element',
+            name="Element",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.TextField()),
-                ('symbol', models.CharField(max_length=2)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.TextField()),
+                ("symbol", models.CharField(max_length=2)),
             ],
         ),
         migrations.CreateModel(
-            name='MaterialSystem',
+            name="MaterialSystem",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('num_elements', models.IntegerField()),
-                ('num_entries', models.IntegerField()),
-                ('elements', models.ManyToManyField(to='mlmodel.Element')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("num_elements", models.IntegerField()),
+                ("num_entries", models.IntegerField()),
+                ("elements", models.ManyToManyField(to="mlmodel.Element")),
             ],
         ),
         migrations.CreateModel(
-            name='MLModel',
+            name="MLModel",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('train_MAE', models.FloatField()),
-                ('train_MSE', models.FloatField()),
-                ('test_MAE', models.FloatField()),
-                ('test_MSE', models.FloatField()),
-                ('baseline_MSE', models.FloatField()),
-                ('baseline_MAE', models.FloatField()),
-                ('target_property', models.CharField(choices=[('Formation Energy', 'Formation Energy'), ('Force', 'Force')], max_length=25)),
-                ('name', models.TextField()),
-                ('material_system', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='mlmodel', to='mlmodel.materialsystem')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("train_MAE", models.FloatField()),
+                ("train_MSE", models.FloatField()),
+                ("test_MAE", models.FloatField()),
+                ("test_MSE", models.FloatField()),
+                ("baseline_MSE", models.FloatField()),
+                ("baseline_MAE", models.FloatField()),
+                (
+                    "target_property",
+                    models.CharField(
+                        choices=[
+                            ("Formation Energy", "Formation Energy"),
+                            ("Force", "Force"),
+                        ],
+                        max_length=25,
+                    ),
+                ),
+                ("name", models.TextField()),
+                (
+                    "material_system",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="mlmodel",
+                        to="mlmodel.materialsystem",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='TrainingData',
+            name="TrainingData",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('structure', mlmodel.models.DictField()),
-                ('energy', models.FloatField()),
-                ('model', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='data', to='mlmodel.mlmodel')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("structure", mlmodel.models.DictField()),
+                ("energy", models.FloatField()),
+                (
+                    "model",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="data",
+                        to="mlmodel.mlmodel",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='SVRModel',
+            name="SVRModel",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('parameters', mlmodel.models.DictField()),
-                ('intercept', mlmodel.models.NumpyArrayField()),
-                ('dual_coef', mlmodel.models.NumpyArrayField()),
-                ('sparse', models.BooleanField()),
-                ('shape_fit', models.TextField()),
-                ('support', mlmodel.models.NumpyArrayField()),
-                ('support_vectors', mlmodel.models.NumpyArrayField()),
-                ('n_support', mlmodel.models.NumpyArrayField()),
-                ('probA', mlmodel.models.NumpyArrayField()),
-                ('probB', mlmodel.models.NumpyArrayField()),
-                ('gamma', models.FloatField()),
-                ('descriptor_parameters', mlmodel.models.DictField()),
-                ('transformed', models.BooleanField(default=False)),
-                ('pickle_str', models.TextField()),
-                ('pickle_str_transformer', models.TextField(null=True)),
-                ('material_system', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='mlmodel.materialsystem')),
-                ('mlmodel', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='svr', to='mlmodel.mlmodel')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("parameters", mlmodel.models.DictField()),
+                ("intercept", mlmodel.models.NumpyArrayField()),
+                ("dual_coef", mlmodel.models.NumpyArrayField()),
+                ("sparse", models.BooleanField()),
+                ("shape_fit", models.TextField()),
+                ("support", mlmodel.models.NumpyArrayField()),
+                ("support_vectors", mlmodel.models.NumpyArrayField()),
+                ("n_support", mlmodel.models.NumpyArrayField()),
+                ("probA", mlmodel.models.NumpyArrayField()),
+                ("probB", mlmodel.models.NumpyArrayField()),
+                ("gamma", models.FloatField()),
+                ("descriptor_parameters", mlmodel.models.DictField()),
+                ("transformed", models.BooleanField(default=False)),
+                ("pickle_str", models.TextField()),
+                ("pickle_str_transformer", models.TextField(null=True)),
+                (
+                    "material_system",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="mlmodel.materialsystem",
+                    ),
+                ),
+                (
+                    "mlmodel",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="svr",
+                        to="mlmodel.mlmodel",
+                    ),
+                ),
             ],
         ),
     ]

@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('mlmodel', '0001_initial'),
+        ("mlmodel", "0001_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='materialsystem',
-            name='num_entries',
+            model_name="materialsystem",
+            name="num_entries",
         ),
         migrations.AddField(
-            model_name='mlmodel',
-            name='DOI',
-            field=models.TextField(default='l'),
+            model_name="mlmodel",
+            name="DOI",
+            field=models.TextField(default="l"),
             preserve_default=False,
         ),
     ]

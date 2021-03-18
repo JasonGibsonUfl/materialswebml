@@ -7,6 +7,7 @@ import ast
 import json
 from mlmodel.custom import NumpyArrayField, DictField
 
+
 class Element(models.Model):
     """
     Elements model
@@ -16,11 +17,13 @@ class Element(models.Model):
         symbol : str
             symbol of the element
     """
+
     name = models.TextField()
     symbol = models.CharField(max_length=2)
 
     def __str__(self):
         return self.symbol
+
 
 class MaterialSystem(models.Model):
     """
@@ -31,12 +34,15 @@ class MaterialSystem(models.Model):
         num_elements : int
             Number of elements in the material system
     """
+
     num_elements = models.IntegerField()
-    #num_entries = models.IntegerField()
+    # num_entries = models.IntegerField()
     elements = models.ManyToManyField(Element)
+
     def __str__(self):
-        string = ''
-        return '-'.join([str(element) for element in self.elements.all()])
+        string = ""
+        return "-".join([str(element) for element in self.elements.all()])
+
 
 class MLModel(models.Model):
     """
@@ -51,7 +57,7 @@ class MLModel(models.Model):
         test_MAE : float
             mean absoulute error of testing data
         test_MSE : float
-            mean squared error of testing data 
+            mean squared error of testing data
         baseline_MAE : float
             mean absoulute error if all targets are computed as the mean value
         baseline_MSE : float
@@ -61,9 +67,10 @@ class MLModel(models.Model):
         name : str
             name given to populated database
     """
+
     TARGET_PROBERTY_CHOICES = [
-        ('Formation Energy', 'Formation Energy'),
-        ('Force', 'Force'),
+        ("Formation Energy", "Formation Energy"),
+        ("Force", "Force"),
     ]
     train_MAE = models.FloatField()
     train_MSE = models.FloatField()
@@ -71,13 +78,21 @@ class MLModel(models.Model):
     test_MSE = models.FloatField()
     baseline_MSE = models.FloatField()
     baseline_MAE = models.FloatField()
-    target_property = models.CharField(max_length=25,choices=TARGET_PROBERTY_CHOICES)
-    material_system = models.ForeignKey(MaterialSystem, related_name='mlmodel', on_delete=models.CASCADE)
+    target_property = models.CharField(max_length=25, choices=TARGET_PROBERTY_CHOICES)
+    material_system = models.ForeignKey(
+        MaterialSystem, related_name="mlmodel", on_delete=models.CASCADE
+    )
     name = models.CharField(max_length=60, unique=True)
     DOI = models.CharField(max_length=60)
+
     def __str__(self):
-        string = ''
-        return '-'.join([str(element) for element in self.material_system.elements.all()]) + '\t' + str(self.target_property)
+        string = ""
+        return (
+            "-".join([str(element) for element in self.material_system.elements.all()])
+            + "\t"
+            + str(self.target_property)
+        )
+
 
 class SVRModel(models.Model):
     """
@@ -114,9 +129,10 @@ class SVRModel(models.Model):
             pickle string of svr model for python reconcstruction
         pickle_str_transformer : str
             pickle string of transformer for python reconstruction
-                                        
-        
+
+
     """
+
     parameters = DictField()
     intercept = NumpyArrayField()
     dual_coef = NumpyArrayField()
@@ -128,21 +144,29 @@ class SVRModel(models.Model):
     probA = NumpyArrayField()
     probB = NumpyArrayField()
     gamma = models.FloatField()
-    mlmodel = models.OneToOneField(MLModel, related_name='svr', on_delete=models.CASCADE)
+    mlmodel = models.OneToOneField(
+        MLModel, related_name="svr", on_delete=models.CASCADE
+    )
     descriptor_parameters = DictField()
     transformed = models.BooleanField(default=False)
     material_system = models.ForeignKey(MaterialSystem, on_delete=models.CASCADE)
     pickle_str = models.TextField()
-    pickle_str_transformer = models.TextField(null = True)
+    pickle_str_transformer = models.TextField(null=True)
 
     def __str__(self):
-        string = ''
-        return '-'.join([str(element) for element in self.material_system.elements.all()]) + '\t' + str(self.transformed)
+        string = ""
+        return (
+            "-".join([str(element) for element in self.material_system.elements.all()])
+            + "\t"
+            + str(self.transformed)
+        )
+
 
 class SVRModelManager(models.Manager):
     """
     used to create svr model and all relationships
     """
+
     def create_model(
         self, model_path, elements, results, params, target, name, transformer_path=None
     ):
@@ -170,7 +194,7 @@ class SVRModelManager(models.Manager):
             model = pickle.load(mod)
         pickle_str = codecs.encode(pickle.dumps(model), "base64").decode()
 
-        #pickle_s = base64.b64encode(pickle_obj)
+        # pickle_s = base64.b64encode(pickle_obj)
         intercept = model._intercept_
         dual_coef = model._dual_coef_
         sparse = model._sparse
@@ -182,9 +206,13 @@ class SVRModelManager(models.Manager):
         probB = model.probB_
         gamma = model._gamma
         parameters = model.get_params()
-        material_system = MaterialSystem.objects.filter(elements__symbol=elements[0]).filter(elements__symbol=elements[1]).get()
+        material_system = (
+            MaterialSystem.objects.filter(elements__symbol=elements[0])
+            .filter(elements__symbol=elements[1])
+            .get()
+        )
         target = target
-        #material_system = MaterialSystem.objects.get(elements__symbols=elements)
+        # material_system = MaterialSystem.objects.get(elements__symbols=elements)
         # Create MLModel
         mlmodel = MLModel.objects.create(
             train_MAE=results["train_MAE"],
@@ -193,10 +221,10 @@ class SVRModelManager(models.Manager):
             test_MSE=results["test_MSE"],
             baseline_MSE=results["baseline_MSE"],
             baseline_MAE=results["baseline_MAE"],
-            target_property = target,
+            target_property=target,
             material_system=material_system,
-            name = name,
-            DOI = results['DOI'],
+            name=name,
+            DOI=results["DOI"],
         )
         mlmodel.save()
 
@@ -204,11 +232,13 @@ class SVRModelManager(models.Manager):
             with open(transformer_path, "rb") as mod:
                 transformer = pickle.load(mod)
 
-            #scale = transformer.scale_
-            #mean = transformer.mean_
-            #var = transformer.var_
-            #n_samples_seen = transformer.n_samples_seen_
-            pickle_str_transformer = codecs.encode(pickle.dumps(transformer), "base64").decode()
+            # scale = transformer.scale_
+            # mean = transformer.mean_
+            # var = transformer.var_
+            # n_samples_seen = transformer.n_samples_seen_
+            pickle_str_transformer = codecs.encode(
+                pickle.dumps(transformer), "base64"
+            ).decode()
             model = SVRModel.objects.create(
                 intercept=intercept,
                 dual_coef=dual_coef,
@@ -225,13 +255,12 @@ class SVRModelManager(models.Manager):
                 mlmodel=mlmodel,
                 descriptor_parameters=params,
                 transformed=True,
-                #scale=scale,
-                #mean=mean,
-                #var=var,
-                #n_samples_seen=n_samples_seen,
-                pickle_str = pickle_str,
-                pickle_str_transformer= pickle_str_transformer
-
+                # scale=scale,
+                # mean=mean,
+                # var=var,
+                # n_samples_seen=n_samples_seen,
+                pickle_str=pickle_str,
+                pickle_str_transformer=pickle_str_transformer,
             )
         else:
             model = SVRModel.objects.create(
@@ -249,14 +278,14 @@ class SVRModelManager(models.Manager):
                 material_system=material_system,
                 mlmodel=mlmodel,
                 descriptor_parameters=params,
-                pickle_str = pickle_str,
-                pickle_str_transformer = None
+                pickle_str=pickle_str,
+                pickle_str_transformer=None,
             )
 
         return model
 
+
 class TrainingData(models.Model):
     structure = DictField()
     energy = models.FloatField()
-    model = models.ForeignKey(MLModel, related_name='data', on_delete=models.CASCADE)
-
+    model = models.ForeignKey(MLModel, related_name="data", on_delete=models.CASCADE)

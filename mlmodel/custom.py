@@ -7,9 +7,10 @@ import numpy as np
 import ast
 from collections import defaultdict
 
+
 class NumpyArrayField(models.TextField):
     description = "Stores a Numpy ndarray."
-    #__metaclass__ = models.SubfieldBase
+    # __metaclass__ = models.SubfieldBase
 
     def __init__(self, *args, **kwargs):
         super(NumpyArrayField, self).__init__(*args, **kwargs)
@@ -30,12 +31,13 @@ class NumpyArrayField(models.TextField):
             return str(value)
         elif isinstance(value, np.ndarray):
             return str(value.tolist())
-            #return pickle.dumps(value.tolist())
+            # return pickle.dumps(value.tolist())
         else:
-            raise TypeError('%s is not a list or numpy array' % value)
+            raise TypeError("%s is not a list or numpy array" % value)
+
 
 class DictField(models.TextField):
-    #__metaclass__ = models.SubfieldBase
+    # __metaclass__ = models.SubfieldBase
     description = "Stores a python dictionary"
 
     def __init__(self, *args, **kwargs):
@@ -63,8 +65,9 @@ class DictField(models.TextField):
         value = self._get_val_from_obj(obj)
         return self.get_db_prep_value(value)
 
+
 class JSONField(models.TextField):
-    #__metaclass__ = models.SubfieldBase
+    # __metaclass__ = models.SubfieldBase
     description = "Stores a python dictionary"
 
     def __init__(self, *args, **kwargs):
@@ -78,5 +81,5 @@ class JSONField(models.TextField):
         return json.loads(value)
 
     def get_prep_value(self, value):
-        print('get prep value', value)
+        print("get prep value", value)
         return json.dumps(value)

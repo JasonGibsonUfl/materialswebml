@@ -6,15 +6,18 @@ from .filters import *
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
 
+
 class ElementViewSet(viewsets.ModelViewSet):
     queryset = Element.objects.all()
     serializer_class = ElementSerializer
     http_method_names = ["get"]
 
+
 class SVRModelViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SVRModel.objects.all().order_by("id")
     serializer_class = SVRModelSerializer
     http_method_names = ["get"]
+
 
 class MLModelViewSet(viewsets.ModelViewSet):
     queryset = MLModel.objects.all().order_by("id")
@@ -22,18 +25,23 @@ class MLModelViewSet(viewsets.ModelViewSet):
     http_method_names = ["get"]
     filter_class = MLModelFilter
 
-#class MLModelList(generics.ListCreateAPIView):
-    #queryset = MLModel.objects.all()
+
+# class MLModelList(generics.ListCreateAPIView):
+# queryset = MLModel.objects.all()
+
 
 class MaterialsSystemViewSet(viewsets.ModelViewSet):
     queryset = MaterialSystem.objects.all().order_by("id")
     serializer_class = MaterialsSystemSerializer
     http_method_names = ["get"]
 
+
 class TrainingDataViewSet(viewsets.ModelViewSet):
     queryset = TrainingData.objects.all()
     serializer_class = TrainingDataSerializer
-    http_method_names = ['get']
+    http_method_names = ["get"]
+
+
 # class dual_coef_testViewSet(viewsets.ModelViewSet):
 #     queryset = dual_coef_test.objects.all()
 #     serializer_class = dual_coef_testSerializer
